@@ -546,6 +546,8 @@ class AfterDetailerScript(scripts.Script):
         elif args.ad_controlnet_model == "None":
             i2i.control_net_enabled = False
 
+        i2i.set_request(p.get_request())
+
         return i2i
 
     def save_image(self, p, image, *, condition: str, suffix: str) -> None:
