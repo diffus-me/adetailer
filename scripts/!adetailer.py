@@ -50,6 +50,7 @@ from modules.processing import (
 )
 from modules.sd_samplers import all_samplers
 from modules.shared import cmd_opts, opts, state
+from modules.system_monitor import monitor_call_context
 
 no_huggingface = getattr(cmd_opts, "ad_no_huggingface", False)
 adetailer_dir = Path(models_path, "adetailer")
@@ -565,7 +566,15 @@ class AfterDetailerScript(scripts.Script):
         with change_torch_load():
             pred = predictor(ad_model, pp.image, args.ad_confidence, **kwargs)
 
-        masks = self.pred_preprocessing(pred, args)
+        with monitor_call_context(
+                p.get_request(),
+                "adetailer.detection",
+                "adetailer.detection",
+                decoded_params={
+                    "width": p.width,
+                    "height": p.height,
+                }):
+            masks = self.pred_preprocessing(pred, args)
 
         if not masks:
             print(
@@ -600,7 +609,16 @@ class AfterDetailerScript(scripts.Script):
             p2.subseed = subseed + j
 
             try:
-                processed = process_images(p2)
+                with monitor_call_context(
+                        p.get_request(),
+                        "adetailer.img2img_replacement",
+                        "adetailer.img2img_replacement",
+                        decoded_params={
+                            "width": p2.width,
+                            "height": p2.height,
+                            "steps": p2.steps,
+                        }):
+                    processed = process_images(p2)
             except NansException as e:
                 msg = f"[-] ADetailer: 'NansException' occurred with {ordinal(n + 1)} settings.\n{e}"
                 print(msg, file=sys.stderr)
