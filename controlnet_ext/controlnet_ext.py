@@ -40,14 +40,17 @@ class ControlNetExt:
         self.cn_models = ["None"]
         self.cn_available = False
         self.external_cn = None
+        self.cn_ui_group = None
+        self.cn_unit = None
 
     def init_controlnet(self):
-        import_path = cn_base_path + ".scripts.external_code"
-
-        self.external_cn = importlib.import_module(import_path, "external_code")
+        self.external_cn = importlib.import_module(cn_base_path + ".scripts.external_code", "external_code")
         self.cn_available = True
         models = self.external_cn.get_models()
         self.cn_models.extend(m for m in models if cn_model_regex.search(m))
+
+        self.cn_ui_group = importlib.import_module(cn_base_path + ".scripts.controlnet_ui.controlnet_ui_group", "controlnet_ui_group")
+        self.cn_unit = importlib.import_module(cn_base_path + ".internal_controlnet.controlnet_unit", "controlnet_unit")
 
     def update_scripts_args(  # noqa: PLR0913
         self,
@@ -70,10 +73,10 @@ class ControlNetExt:
                     break
 
         cn_units = [
-            self.external_cn.ControlNetUnit(
+            self.cn_ui_group.UiControlNetUnit(
                 model=model,
                 weight=weight,
-                control_mode=self.external_cn.ControlMode.BALANCED,
+                control_mode=self.cn_unit.ControlMode.BALANCED,
                 module=module,
                 guidance_start=guidance_start,
                 guidance_end=guidance_end,
