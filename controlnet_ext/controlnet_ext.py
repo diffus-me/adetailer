@@ -86,6 +86,7 @@ class ControlNetExt:
 
 def get_cn_model_dirs() -> list[Path]:
     cn_model_dir = Path(models_path, "ControlNet")
+    cn_model_dir_old = Path(models_path, "controlnet", "models")
     if controlnet_path is not None:
         cn_model_dir_old = controlnet_path.joinpath("models")
     else:
@@ -93,7 +94,7 @@ def get_cn_model_dirs() -> list[Path]:
     ext_dir1 = shared.opts.data.get("control_net_models_path", "")
     ext_dir2 = getattr(shared.cmd_opts, "controlnet_dir", "")
 
-    dirs = [cn_model_dir]
+    dirs = [cn_model_dir, cn_model_dir_old]
     for ext_dir in [cn_model_dir_old, ext_dir1, ext_dir2]:
         if ext_dir:
             dirs.append(Path(ext_dir))
