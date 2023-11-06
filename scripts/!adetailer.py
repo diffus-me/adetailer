@@ -107,6 +107,7 @@ class AfterDetailerScript(scripts.Script):
         self.ultralytics_device = self.get_ultralytics_device()
 
         self.controlnet_ext = None
+        self._unit_args_start_and_end = []
 
     def __repr__(self):
         return f"{self.__class__.__name__}(version={__version__})"
@@ -129,8 +130,9 @@ class AfterDetailerScript(scripts.Script):
             checkpoints_list=modules.sd_models.checkpoint_tiles,
         )
 
-        components, infotext_fields = adui(num_models, is_img2img, webui_info)
+        components, infotext_fields, unit_starts_and_ends = adui(num_models, is_img2img, webui_info)
 
+        self._unit_args_start_and_end = unit_starts_and_ends
         self.infotext_fields = infotext_fields
         return components
 
@@ -167,8 +169,16 @@ class AfterDetailerScript(scripts.Script):
                 guidance_end=args.ad_controlnet_guidance_end,
             )
 
+    def _convert_args_to_dicts(self, *args_) -> list[dict]:
+        assert all(
+            (unit_end_index - unit_start_index) == len(ALL_ARGS) for unit_start_index, unit_end_index in self._unit_args_start_and_end)
+        return [
+            dict(zip(ALL_ARGS.attrs, args_[unit_start_index:unit_end_index]))
+            for unit_start_index, unit_end_index in self._unit_args_start_and_end]
+
+
     def is_ad_enabled(self, *args_) -> bool:
-        arg_list = [arg for arg in args_ if isinstance(arg, dict)]
+        arg_list = self._convert_args_to_dicts(*args_)
         if not args_ or not arg_list or not isinstance(args_[0], (bool, dict)):
             message = f"""
                        [-] ADetailer: Invalid arguments passed to ADetailer.
@@ -185,7 +195,7 @@ class AfterDetailerScript(scripts.Script):
         """
         `args_` is at least 1 in length by `is_ad_enabled` immediately above
         """
-        args = [arg for arg in args_ if isinstance(arg, dict)]
+        args = self._convert_args_to_dicts(*args_)
 
         if not args:
             message = f"[-] ADetailer: Invalid arguments passed to ADetailer: {args_!r}"

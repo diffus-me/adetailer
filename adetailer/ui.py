@@ -76,7 +76,8 @@ def adui(
     is_img2img: bool,
     webui_info: WebuiInfo,
 ):
-    states = []
+    #states = []
+    components = []
     infotext_fields = []
     eid = partial(elem_id, n=0, is_img2img=is_img2img)
     tab_id = "tab_txt2img"
@@ -84,6 +85,8 @@ def adui(
     if is_img2img:
         tab_id = "tab_img2img"
         function_name = "modules.img2img.img2img"
+
+    unit_starts_and_ends = []
 
     with gr.Accordion(AFTER_DETAILER, open=False, elem_id=eid("ad_main_accordion")):
         with gr.Row():
@@ -105,6 +108,7 @@ def adui(
                             'adetailer.multiplier',
                             extractor = (ad_enable) => ad_enable? 3 : 1)"""
                 )
+                components.append(ad_enable)
 
             with gr.Column(scale=1, min_width=180):
                 gr.Markdown(
@@ -117,23 +121,26 @@ def adui(
         with gr.Group(), gr.Tabs():
             for n in range(num_models):
                 with gr.Tab(ordinal(n + 1)):
-                    state, infofields = one_ui_group(
+                    unit_components, infofields = one_ui_group(
                         n=n,
                         is_img2img=is_img2img,
                         webui_info=webui_info,
                     )
 
-                states.append(state)
+                unit_start = len(components)
+                components.extend(unit_components)
+                unit_end = len(components)
+                unit_starts_and_ends.append((unit_start, unit_end))
                 infotext_fields.extend(infofields)
 
     # components: [bool, dict, dict, ...]
-    components = [ad_enable, *states]
-    return components, infotext_fields
+    #components = [ad_enable, *states]
+    return components, infotext_fields, unit_starts_and_ends
 
 
 def one_ui_group(n: int, is_img2img: bool, webui_info: WebuiInfo):
     w = Widgets()
-    state = gr.State({})
+    #state = gr.State({})
     eid = partial(elem_id, n=n, is_img2img=is_img2img)
 
     with gr.Row():
@@ -196,15 +203,16 @@ def one_ui_group(n: int, is_img2img: bool, webui_info: WebuiInfo):
     with gr.Group():
         controlnet(w, n, is_img2img)
 
-    all_inputs = [state, *w.tolist()]
-    target_button = webui_info.i2i_button if is_img2img else webui_info.t2i_button
-    target_button.click(
-        fn=on_generate_click, inputs=all_inputs, outputs=state, queue=False
-    )
+    #all_inputs = [state, *w.tolist()]
+    #target_button = webui_info.i2i_button if is_img2img else webui_info.t2i_button
+    #target_button.click(
+    #    fn=on_generate_click, inputs=all_inputs, outputs=state, queue=False
+    #)
+    all_inputs = w.tolist()
 
     infotext_fields = [(getattr(w, attr), name + suffix(n)) for attr, name in ALL_ARGS]
 
-    return state, infotext_fields
+    return all_inputs, infotext_fields
 
 
 def detection(w: Widgets, n: int, is_img2img: bool):
