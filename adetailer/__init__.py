@@ -4,7 +4,7 @@ from .common import PredictOutput, get_models
 from .mediapipe import mediapipe_predict
 from .ultralytics import ultralytics_predict
 
-ADETAILER = "ADetailer"
+ADETAILER = "Detection and Inpainting Tool (ADetailer)"
 
 __all__ = [
     "ADETAILER",
