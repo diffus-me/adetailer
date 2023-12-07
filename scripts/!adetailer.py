@@ -442,6 +442,7 @@ class AfterDetailerScript(scripts.Script):
             i2i.control_net_enabled = False
 
         i2i.set_request(p.get_request())
+        i2i.set_all_model_info(p.get_all_model_info())
 
         return i2i
 
