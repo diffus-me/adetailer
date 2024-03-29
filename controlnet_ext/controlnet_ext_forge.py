@@ -36,6 +36,15 @@ def add_forge_script_to_adetailer_run(
     p.scripts.alwayson_scripts.append(script)
     p.script_args_value.extend(script_args)
 
+    _CONTROLNET_UNITS_KEY = "_adetailer_controlnet_units"
+    def _get_controlnet_units(p):
+        if not hasattr(p, _CONTROLNET_UNITS_KEY):
+            setattr(p, _CONTROLNET_UNITS_KEY, script_args)
+
+        return getattr(p, _CONTROLNET_UNITS_KEY)
+
+    script.get_enabled_units = _get_controlnet_units
+
 
 class ControlNetExt:
     def __init__(self):
