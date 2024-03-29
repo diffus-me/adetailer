@@ -11,6 +11,8 @@ from adetailer import AFTER_DETAILER, __version__
 from adetailer.args import ALL_ARGS, MASK_MERGE_INVERT
 from controlnet_ext import controlnet_exists, controlnet_type, get_cn_models
 
+from modules.ui_components import InputAccordion
+
 if controlnet_type == "forge":
     from lib_controlnet import global_state
 
@@ -263,10 +265,10 @@ def one_ui_group(n: int, is_img2img: bool, webui_info: WebuiInfo):
         ):
             mask_preprocessing(w, n, is_img2img)
 
-        with gr.Accordion(
-            "Inpainting", open=False, elem_id=eid("ad_inpainting_accordion")
-        ):
-            inpainting(w, n, is_img2img, webui_info)
+        with InputAccordion(
+            False, label="Inpainting", elem_id=eid("ad_inpainting_accordion")
+        ) as inpainting_accordion:
+            inpainting(w, n, is_img2img, webui_info, inpainting_accordion)
 
     with gr.Group():
         controlnet(w, n, is_img2img)
@@ -380,7 +382,7 @@ def mask_preprocessing(w: Widgets, n: int, is_img2img: bool):
             )
 
 
-def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo):
+def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo, inpainting_accordion):
     eid = partial(elem_id, n=n, is_img2img=is_img2img)
 
     with gr.Group():
@@ -525,7 +527,7 @@ def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo):
                     elem_id=eid("ad_use_checkpoint"),
                 )
 
-                ckpts = ["Use same checkpoint", *webui_info.checkpoints_list]
+                ckpts = ["Use same checkpoint"]
 
                 w.ad_checkpoint = gr.Dropdown(
                     label="ADetailer checkpoint" + suffix(n),
@@ -533,6 +535,14 @@ def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo):
                     value=ckpts[0],
                     visible=True,
                     elem_id=eid("ad_checkpoint"),
+                )
+                def _update_checkpoints(request: gr.Request):
+                    return gr.update(choices=ckpts + webui_info.checkpoints_list(request))
+
+                inpainting_accordion.change(
+                    _update_checkpoints,
+                    inputs=[],
+                    outputs=[w.ad_checkpoint],
                 )
 
             with gr.Column(variant="compact"):

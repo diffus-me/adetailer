@@ -142,10 +142,10 @@ class AfterDetailerScript(scripts.Script):
         ad_model_list = list(model_mapping.keys())
         sampler_names = [sampler.name for sampler in all_samplers]
 
-        try:
-            checkpoint_list = modules.sd_models.checkpoint_tiles(use_shorts=True)
-        except TypeError:
-            checkpoint_list = modules.sd_models.checkpoint_tiles()
+        # try:
+        #     checkpoint_list = modules.sd_models.checkpoint_tiles(use_shorts=True)
+        # except TypeError:
+        #     checkpoint_list = modules.sd_models.checkpoint_tiles()
         vae_list = modules.shared_items.sd_vae_items()
 
         webui_info = WebuiInfo(
@@ -153,7 +153,7 @@ class AfterDetailerScript(scripts.Script):
             sampler_names=sampler_names,
             t2i_button=txt2img_submit_button,
             i2i_button=img2img_submit_button,
-            checkpoints_list=checkpoint_list,
+            checkpoints_list=modules.sd_models.checkpoint_tiles,
             vae_list=vae_list,
         )
 
@@ -558,6 +558,7 @@ class AfterDetailerScript(scripts.Script):
             i2i.control_net_enabled = False
 
         i2i.set_request(p.get_request())
+        i2i.set_all_model_info(p.get_all_model_info())
 
         return i2i
 
