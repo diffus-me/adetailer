@@ -127,6 +127,11 @@ def adui(
     states = []
     infotext_fields = []
     eid = partial(elem_id, n=0, is_img2img=is_img2img)
+    tab_id = "tab_txt2img"
+    function_name = "modules.txt2img.txt2img"
+    if is_img2img:
+        tab_id = "tab_img2img"
+        function_name = "modules.img2img.img2img"
 
     with InputAccordion(
         value=False,
@@ -135,6 +140,25 @@ def adui(
         visible=True,
     ) as ad_enable:
         with gr.Row():
+            with gr.Column(scale=6):
+                ad_enable = gr.Checkbox(
+                    label="Enable ADetailer",
+                    value=False,
+                    visible=True,
+                    elem_id=eid("ad_enable"),
+                )
+                ad_enable.change(
+                    None,
+                    inputs=[],
+                    outputs=[ad_enable],
+                    _js=f"""
+                        monitorMutiplier(
+                            '{tab_id}',
+                            '{function_name}',
+                            'adetailer.multiplier',
+                            extractor = (ad_enable) => ad_enable? 3 : 1)"""
+                )
+
             with gr.Column(scale=8):
                 ad_skip_img2img = gr.Checkbox(
                     label="Skip img2img",

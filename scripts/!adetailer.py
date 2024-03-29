@@ -77,6 +77,7 @@ from modules.processing import (
 )
 from modules.sd_samplers import all_samplers
 from modules.shared import cmd_opts, opts, state
+from modules.system_monitor import monitor_call_context
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -837,6 +838,20 @@ class AfterDetailerScript(scripts.Script):
                     classes=args.ad_model_classes,
                 )
 
+        with change_torch_load():
+            pred = predictor(ad_model, pp.image, args.ad_confidence, **kwargs)
+
+        with monitor_call_context(
+                p.get_request(),
+                "adetailer.detection",
+                "adetailer.detection",
+                decoded_params={
+                    "width": p.width,
+                    "height": p.height,
+                }):
+            masks = self.pred_preprocessing(p, pred, args)
+            shared.state.assign_current_image(pred.preview)
+
         if pred.preview is None:
             print(
                 f"[-] ADetailer: nothing detected on image {i + 1} with {ordinal(n + 1)} settings."
@@ -872,7 +887,16 @@ class AfterDetailerScript(scripts.Script):
             self.fix_p2(p, p2, pp, args, pred, j)
 
             try:
-                processed = process_images(p2)
+                with monitor_call_context(
+                        p.get_request(),
+                        "adetailer.img2img_replacement",
+                        "adetailer.img2img_replacement",
+                        decoded_params={
+                            "width": p2.width,
+                            "height": p2.height,
+                            "steps": p2.steps,
+                        }):
+                    processed = process_images(p2)
             except NansException as e:
                 msg = f"[-] ADetailer: 'NansException' occurred with {ordinal(n + 1)} settings.\n{e}"
                 print(msg, file=sys.stderr)
