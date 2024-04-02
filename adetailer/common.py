@@ -13,6 +13,8 @@ from PIL import Image, ImageDraw
 from rich import print  # noqa: A004  Shadowing built-in 'print'
 from torchvision.transforms.functional import to_pil_image
 
+from functools import partial
+
 REPO_ID = "Bingsu/adetailer"
 
 T = TypeVar("T", int, float)
@@ -26,18 +28,23 @@ class PredictOutput(Generic[T]):
     preview: Optional[Image.Image] = None
 
 
-def hf_download(file: str, repo_id: str = REPO_ID, check_remote: bool = True) -> str:
+def _hf_download(file: str, model_dir: str | os.PathLike[str], repo_id: str = REPO_ID, check_remote: bool = True) -> str:
+    model_dir = Path(model_dir)
+    target_path = model_dir / file
+    if target_path.exists():
+        return str(target_path)
+
     if check_remote:
         with suppress(Exception):
-            return hf_hub_download(repo_id, file, etag_timeout=1)
+            return hf_hub_download(repo_id, file, etag_timeout=1, local_dir=model_dir, local_dir_use_symlinks=False)
 
         with suppress(Exception):
             return hf_hub_download(
-                repo_id, file, etag_timeout=1, endpoint="https://hf-mirror.com"
+                repo_id, file, etag_timeout=1, endpoint="https://hf-mirror.com", local_dir=model_dir, local_dir_use_symlinks=False
             )
 
     with suppress(Exception):
-        return hf_hub_download(repo_id, file, local_files_only=True)
+        return hf_hub_download(repo_id, file, local_files_only=True, local_dir=model_dir, local_dir_use_symlinks=False)
 
     msg = f"[-] ADetailer: Failed to load model {file!r} from huggingface"
     print(msg)
@@ -56,7 +63,7 @@ def scan_model_dir(path: Path) -> list[Path]:
     return [p for p in path.rglob("*") if p.is_file() and p.suffix == ".pt"]
 
 
-def download_models(*names: str, check_remote: bool = True) -> dict[str, str]:
+def download_models(*names: str, hf_download, check_remote: bool = True) -> dict[str, str]:
     models = OrderedDict()
     with ThreadPoolExecutor() as executor:
         for name in names:
@@ -86,6 +93,8 @@ def get_models(
             continue
         model_paths.extend(scan_model_dir(Path(dir_)))
 
+    hf_download = partial(_hf_download, model_dir=dirs[0])
+
     models = OrderedDict()
     to_download = [
         "face_yolov8n.pt",
@@ -95,7 +104,7 @@ def get_models(
         "person_yolov8s-seg.pt",
         "yolov8x-worldv2.pt",
     ]
-    models.update(download_models(*to_download, check_remote=huggingface))
+    models.update(download_models(*to_download, hf_download=hf_download, check_remote=huggingface))
 
     models.update(
         {
