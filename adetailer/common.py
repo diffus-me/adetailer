@@ -4,6 +4,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
+from functools import partial
 
 from huggingface_hub import hf_hub_download
 from PIL import Image, ImageDraw
@@ -21,14 +22,19 @@ class PredictOutput:
     preview: Optional[Image.Image] = None
 
 
-def hf_download(file: str, repo_id: str = REPO_ID) -> str | None:
+def _hf_download(file: str, model_dir: str | Path, repo_id: str = REPO_ID) -> str | None:
     global _download_failed
 
     if _download_failed:
         return "INVALID"
 
+    model_dir = Path(model_dir)
+    target_path = model_dir / file
+    if target_path.exists():
+        return str(target_path)
+
     try:
-        path = hf_hub_download(repo_id, file)
+        path = hf_hub_download(repo_id, file, local_dir=model_dir, local_dir_use_symlinks=False)
     except Exception:
         msg = f"[-] ADetailer: Failed to load model {file!r} from huggingface"
         print(msg)
@@ -47,6 +53,8 @@ def get_models(
     model_dir: str | Path, extra_dir: str | Path = "", huggingface: bool = True
 ) -> OrderedDict[str, str]:
     model_paths = [*scan_model_dir(model_dir), *scan_model_dir(extra_dir)]
+
+    hf_download = partial(_hf_download, model_dir=model_dir)
 
     models = OrderedDict()
     if huggingface:
