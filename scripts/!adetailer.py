@@ -766,7 +766,9 @@ class AfterDetailerScript(scripts.Script):
                 decoded_params={
                     "width": p.width,
                     "height": p.height,
-                }):
+                },
+                only_available_for=["basic", "plus", "pro", "api"],
+        ):
             masks = self.pred_preprocessing(p, pred, args)
             shared.state.assign_current_image(pred.preview)
 
@@ -811,7 +813,9 @@ class AfterDetailerScript(scripts.Script):
                             "width": p2.width,
                             "height": p2.height,
                             "steps": p2.steps,
-                        }):
+                        },
+                        only_available_for=["basic", "plus", "pro", "api"],
+                ):
                     processed = process_images(p2)
             except NansException as e:
                 msg = f"[-] ADetailer: 'NansException' occurred with {ordinal(n + 1)} settings.\n{e}"
