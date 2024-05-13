@@ -855,14 +855,15 @@ class AfterDetailerScript(scripts.Script):
             pred = predictor(ad_model, pp.image, args.ad_confidence, **kwargs)
 
         with monitor_call_context(
-                p.get_request(),
-                "adetailer.detection",
-                "adetailer.detection",
-                decoded_params={
-                    "width": p.width,
-                    "height": p.height,
-                },
-                only_available_for=["basic", "plus", "pro", "api"],
+            p.get_request(),
+            "adetailer.detection",
+            "adetailer.detection",
+            decoded_params={
+                "width": p.width,
+                "height": p.height,
+            },
+            feature_type="generate",
+            feature_name="ADetailer",
         ):
             masks = self.pred_preprocessing(p, pred, args)
             shared.state.assign_current_image(pred.preview)
@@ -903,15 +904,16 @@ class AfterDetailerScript(scripts.Script):
 
             try:
                 with monitor_call_context(
-                        p.get_request(),
-                        "adetailer.img2img_replacement",
-                        "adetailer.img2img_replacement",
-                        decoded_params={
-                            "width": p2.width,
-                            "height": p2.height,
-                            "steps": p2.steps,
-                        },
-                        only_available_for=["basic", "plus", "pro", "api"],
+                    p.get_request(),
+                    "adetailer.img2img_replacement",
+                    "adetailer.img2img_replacement",
+                    decoded_params={
+                        "width": p2.width,
+                        "height": p2.height,
+                        "steps": p2.steps,
+                    },
+                    feature_type="generate",
+                    feature_name="ADetailer",
                 ):
                     processed = process_images(p2)
             except NansException as e:
