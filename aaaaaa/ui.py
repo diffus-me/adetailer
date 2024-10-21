@@ -566,11 +566,9 @@ def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo, inpa
                     visible=True,
                     elem_id=eid("ad_checkpoint"),
                 )
-                def _update_checkpoints(request: gr.Request):
-                    return gr.update(choices=ckpts + webui_info.checkpoints_list(request))
-
                 inpainting_accordion.change(
-                    _update_checkpoints,
+                    fn=None,
+                    _js="async () => ({ choices: ['Use same checkpoint', ...(await listFavoriteCheckpointTitles())], __type__: 'update' })",
                     inputs=[],
                     outputs=[w.ad_checkpoint],
                 )
