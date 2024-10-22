@@ -12,6 +12,7 @@ from adetailer.args import ALL_ARGS, MASK_MERGE_INVERT
 from controlnet_ext import controlnet_exists, controlnet_type, get_cn_models
 
 from modules.ui_components import InputAccordion
+from modules.model_info import register_used_model_checkpoint_key
 
 if controlnet_type == "forge":
     from lib_controlnet import global_state
@@ -173,6 +174,8 @@ def adui(
 
         with gr.Group(), gr.Tabs():
             for n in range(num_models):
+                register_used_model_checkpoint_key("ADetailer checkpoint" + suffix(n), False)
+
                 with gr.Tab(ordinal(n + 1)):
                     unit_components, infofields = one_ui_group(
                         n=n,
