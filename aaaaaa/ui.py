@@ -212,7 +212,7 @@ def one_ui_group(n: int, is_img2img: bool, webui_info: WebuiInfo):
             w.ad_tab_enable = gr.Checkbox(
                 label=f"Enable this tab ({ordinal(n + 1)})",
                 value=True,
-                visible=True,
+                visible=False,
                 elem_id=eid("ad_tab_enable"),
             )
 
