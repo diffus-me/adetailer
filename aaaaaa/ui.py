@@ -172,7 +172,7 @@ def adui(
                     elem_id=eid("ad_version"),
                 )
 
-        infotext_fields.append((ad_enable, "ADetailer enable"))
+        infotext_fields.append((ad_enable, lambda d: any(key.startswith("ADetailer model") and value != "None" for key, value in d.items())))
         infotext_fields.append((ad_skip_img2img, "ADetailer skip img2img"))
 
         with gr.Group(), gr.Tabs():
