@@ -144,27 +144,20 @@ def adui(
         label=ADETAILER,
         visible=True,
     ) as ad_enable:
-        with gr.Row():
-            with gr.Column(scale=6):
-                ad_enable = gr.Checkbox(
-                    label="Enable ADetailer",
-                    value=False,
-                    visible=True,
-                    elem_id=eid("ad_enable"),
-                )
-                ad_enable.change(
-                    None,
-                    inputs=[],
-                    outputs=[ad_enable],
-                    _js=f"""
-                        monitorMutiplier(
-                            '{tab_id}',
-                            '{function_name}',
-                            'adetailer.multiplier',
-                            extractor = (ad_enable) => ad_enable? 3 : 1)"""
-                )
-                components.append(ad_enable)
+        ad_enable.change(
+            None,
+            inputs=[],
+            outputs=[ad_enable],
+            _js=f"""
+                monitorMutiplier(
+                    '{tab_id}',
+                    '{function_name}',
+                    'adetailer.multiplier',
+                    extractor = (ad_enable) => ad_enable? 3 : 1)"""
+        )
+        components.append(ad_enable)
 
+        with gr.Row():
             with gr.Column(scale=8):
                 ad_skip_img2img = gr.Checkbox(
                     label="Skip img2img",
