@@ -564,7 +564,7 @@ def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo, inpa
                 )
                 inpainting_accordion.change(
                     fn=None,
-                    _js="async () => ({ choices: ['Use same checkpoint', ...(await listFavoriteCheckpointTitles())], __type__: 'update' })",
+                    _js="async () => ({ choices: [['Use same checkpoint', 'Use same checkpoint'], ...(await listFavoriteCheckpointTitles())], __type__: 'update' })",
                     inputs=[],
                     outputs=[w.ad_checkpoint],
                 )
