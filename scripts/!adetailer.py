@@ -80,6 +80,7 @@ from modules.shared import cmd_opts, opts, state
 from modules.system_monitor import monitor_call_context
 
 from adetailer.args import ALL_ARGS
+from modules.model_info import add_extra_networks_to_pnginfo
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -577,6 +578,8 @@ class AfterDetailerScript(scripts.Script):
 
         i2i.set_request(p.get_request())
         i2i.set_all_model_info(p.get_all_model_info())
+        i2i.extra_generation_params.pop("Lora hashes", None)
+        i2i.extra_generation_params.pop("TI hashes", None)
 
         return i2i
 
@@ -916,6 +919,11 @@ class AfterDetailerScript(scripts.Script):
                 continue
             finally:
                 p2.close()
+
+            for key in ["Lora hashes", "TI hashes"]:
+                names = p2.extra_generation_params.get(key, None)
+                if names:
+                    add_extra_networks_to_pnginfo(p.extra_generation_params, key, names.split(", "))
 
             if not processed.images:
                 processed = None
