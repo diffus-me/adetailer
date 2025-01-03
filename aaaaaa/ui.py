@@ -14,7 +14,7 @@ from adetailer.args import ALL_ARGS, MASK_MERGE_INVERT
 from controlnet_ext import controlnet_exists, controlnet_type, get_cn_models
 
 from modules.ui_components import InputAccordion
-from modules.model_info import register_used_model_checkpoint_key
+from modules.model_info import register_favorite_checkpoints_dropdown, register_used_model_checkpoint_key
 
 if controlnet_type == "forge":
     from lib_controlnet import global_state
@@ -282,10 +282,10 @@ def one_ui_group(n: int, is_img2img: bool, webui_info: WebuiInfo):
         ):
             mask_preprocessing(w, n, is_img2img)
 
-        with InputAccordion(
-            False, label="Inpainting", elem_id=eid("ad_inpainting_accordion")
-        ) as inpainting_accordion:
-            inpainting(w, n, is_img2img, webui_info, inpainting_accordion)
+        with gr.Accordion(
+            "Inpainting", open=False, elem_id=eid("ad_inpainting_accordion")
+        ):
+            inpainting(w, n, is_img2img, webui_info)
 
     with gr.Group():
         controlnet(w, n, is_img2img)
@@ -408,7 +408,7 @@ def mask_preprocessing(w: Widgets, n: int, is_img2img: bool):
             )
 
 
-def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo, inpainting_accordion):  # noqa: PLR0915
+def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo):  # noqa: PLR0915
     eid = partial(elem_id, n=n, is_img2img=is_img2img)
 
     with gr.Group():
@@ -562,12 +562,7 @@ def inpainting(w: Widgets, n: int, is_img2img: bool, webui_info: WebuiInfo, inpa
                     visible=True,
                     elem_id=eid("ad_checkpoint"),
                 )
-                inpainting_accordion.change(
-                    fn=None,
-                    _js="async () => ({ choices: [['Use same checkpoint', 'Use same checkpoint'], ...(await listFavoriteCheckpointTitles())], __type__: 'update' })",
-                    inputs=[],
-                    outputs=[w.ad_checkpoint],
-                )
+                register_favorite_checkpoints_dropdown(w.ad_checkpoint, ckpts[0])
 
             with gr.Column(variant="compact"):
                 w.ad_use_vae = gr.Checkbox(
