@@ -870,6 +870,7 @@ class AfterDetailerScript(scripts.Script):
             },
             feature_type="generate",
             feature_name="ADetailer",
+            is_flux=p.is_flux,
         ):
             masks = self.pred_preprocessing(p, pred, args)
             shared.state.assign_current_image(pred.preview)
@@ -911,6 +912,7 @@ class AfterDetailerScript(scripts.Script):
                     },
                     feature_type="generate",
                     feature_name="ADetailer",
+                    is_flux=p.is_flux,
                 ):
                     processed = process_images(p2)
             except NansException as e:
