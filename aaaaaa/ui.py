@@ -131,11 +131,6 @@ def adui(
     components = []
     infotext_fields = []
     eid = partial(elem_id, n=0, is_img2img=is_img2img)
-    tab_id = "tab_txt2img"
-    function_name = "modules.txt2img.txt2img"
-    if is_img2img:
-        tab_id = "tab_img2img"
-        function_name = "modules.img2img.img2img"
 
     unit_starts_and_ends = []
     with InputAccordion(
@@ -144,17 +139,6 @@ def adui(
         label=ADETAILER,
         visible=True,
     ) as ad_enable:
-        ad_enable.change(
-            None,
-            inputs=[],
-            outputs=[ad_enable],
-            _js=f"""
-                monitorMutiplier(
-                    '{tab_id}',
-                    '{function_name}',
-                    'adetailer.multiplier',
-                    extractor = (ad_enable) => ad_enable? 3 : 1)"""
-        )
         components.append(ad_enable)
 
         with gr.Row():
